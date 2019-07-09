@@ -9,8 +9,11 @@ When our browser submits a POST request, the data in the request body is sent as
 While this data type is great for transmitting data, it's not readable for us humans.
 To make this data readable, we will need to install another piece of middleware, body-parser.
 */
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({extended: true}));
+
+// const bodyParser = require('body-parser');
+// app.use(bodyParser.urlencoded({extended: true}));
+
+app.use(express.urlencoded({extended: true}));
 
 const urlDatabase = {
   b2xVn2: 'http://www.lighthouselabs.ca',
@@ -23,10 +26,12 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 });
 
+//page to create a new URL
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
 
+//to get to the edit screen
 app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render('urls_show', templateVars);
@@ -38,6 +43,7 @@ app.post('/urls/:id', (req, res) => {
   res.redirect('/urls/');
 });
 
+//this is the redirection using the short URL and small link
 app.get('/u/:shortURL', (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
 });
@@ -51,6 +57,7 @@ app.get('/urls', (req, res) => {
 app.post('/urls', (req, res) => {
   let random = generateRandomString();
   urlDatabase[random] = req.body.longURL;
+  console.log(req.body);
   res.redirect(`/urls/${random}`);
 });
 
