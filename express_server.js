@@ -17,6 +17,7 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
+//deletes the URL
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
@@ -31,6 +32,12 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+//update the long URL
+app.post('/urls/:id', (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect('/urls/');
+});
+
 app.get('/u/:shortURL', (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
 });
@@ -40,6 +47,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+//create new URL
 app.post('/urls', (req, res) => {
   let random = generateRandomString();
   urlDatabase[random] = req.body.longURL;
