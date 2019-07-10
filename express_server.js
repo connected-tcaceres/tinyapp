@@ -30,7 +30,6 @@ const users = {
 
 //deletes the URL
 app.post('/urls/:shortURL/delete', (req, res) => {
-  console.log('delete cookies:', req.cookies);
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
@@ -58,13 +57,9 @@ app.post('/urls/:id', (req, res) => {
 
 app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
-    console.log('email or password is blank');
-    console.log(res.status);
     res.statusCode = 400;
     res.sendStatus(400);
   } else if (emailInDB(req.body.email)) {
-    console.log('email already in database');
-    console.log(res.status);
     res.statusCode = 400;
     res.send(400);
   } else {
@@ -87,9 +82,6 @@ app.get('/u/:shortURL', (req, res) => {
 
 app.get('/urls', (req, res) => {
   let templateVars = {urls: urlDatabase, user: users[req.cookies.user_id]};
-  console.log('here:', templateVars);
-  console.log('users table:', users);
-  console.log('cookies:', req.cookies);
   res.render('urls_index', templateVars);
 });
 
