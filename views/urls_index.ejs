@@ -15,7 +15,11 @@
 	</head>
 	<body>
 		<!-- include the _header partial -->
-		<% include ./partials/_header %>
+		<% include ./partials/_header %> <% if(!user){ %>
+		<div class="alert alert-danger" role="alert">
+			Please login or register to access the information on this page!
+		</div>
+		<% } else {%>
 
 		<main style="margin: 1em">
 			<h3>My URLs</h3>
@@ -32,7 +36,7 @@
 					<% for(let url in urls) { %>
 					<tr>
 						<td><a href="/u/<%=url%>"><%= url %></a></td>
-						<td><a href="<%=urls[url]%>"><%= urls[url] %></a></td>
+						<td><a href="<%=urls[url].longURL%>"><%= urls[url].longURL %></a></td>
 						<td>
 							<a href="/urls/<%= url %>"><button class="btn btn-outline-primary">Edit</button></a>
 						</td>
@@ -46,6 +50,7 @@
 				</tbody>
 			</table>
 		</main>
+		<% } %>
 		<!-- Bootstrap JS -->
 		<script
 			src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
