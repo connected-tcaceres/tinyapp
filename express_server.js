@@ -17,17 +17,20 @@ const users = {
   userRandomID: {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
+    password: '1'
+    //password: 'purple-monkey-dinosaur'
   },
   user2RandomID: {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: 'dishwasher-funk'
+    password: '2'
+    //password: 'dishwasher-funk'
   }
 };
 
 //deletes the URL
 app.post('/urls/:shortURL/delete', (req, res) => {
+  console.log('delete cookies:', req.cookies);
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
@@ -72,9 +75,6 @@ app.post('/register', (req, res) => {
       password: req.body.password
     };
     users[userID] = newUser;
-    console.warn('newUser:', newUser);
-    console.warn('userID:', userID);
-    console.log('database:', users);
     res.cookie('user_id', userID);
     res.redirect('/urls');
   }
@@ -87,6 +87,9 @@ app.get('/u/:shortURL', (req, res) => {
 
 app.get('/urls', (req, res) => {
   let templateVars = {urls: urlDatabase, user: users[req.cookies.user_id]};
+  console.log('here:', templateVars);
+  console.log('users table:', users);
+  console.log('cookies:', req.cookies);
   res.render('urls_index', templateVars);
 });
 
@@ -107,16 +110,11 @@ app.get('/urls.json', (req, res) => {
 
 app.post('/login', (req, res) => {
   let {email, password} = req.body;
-  console.log(email, password);
   if (!validateUser(email, password)) {
     res.statusCode = 403;
     res.sendStatus(403);
   } else {
-    console.log('current database:', users);
-    console.log('email:', email);
-    console.log('password:', password);
     res.cookie('user_id', getUserID(email)); //set the cookie to username
-    console.log(getUserID(email));
     res.redirect('/urls');
   }
 });
