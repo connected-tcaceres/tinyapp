@@ -89,6 +89,10 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
+app.get('*', (req, res) => {
+  res.render('error_page', {username: req.body.username});
+});
+
 const generateRandomString = () => {
   let string = '';
   let options = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
