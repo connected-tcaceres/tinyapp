@@ -15,7 +15,7 @@
 		<!-- include the _header partial -->
 		<% include ./partials/_header %> <% if(!user){ %>
 		<div class="alert alert-danger" role="alert">
-			A simple danger alert—check it out!
+			Please login or register to access the information on this page!
 		</div>
 		<% } else {%>
 
@@ -29,7 +29,7 @@
 			<div style="background-color:whitesmoke" class="card-footer text-muted">
 				<div style="margin:0 auto">
 					<h1>Edit</h1>
-					<form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
+					<form class="form-inline" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
 						<div style="margin:0 auto" class="form-group mb-2">
 							<label for="longURL">New URL:</label>
 							<input

@@ -1,14 +1,22 @@
 const express = require('express');
 const app = express();
-const PORT = 8080; //default port 8080
-//const cookieParser = require('cookie-parser');
+const PORT = 8080;
 const cookieSession = require('cookie-session');
-const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
+
+const {
+  generateRandomString,
+  emailInDB,
+  validateUser,
+  getUserByEmail,
+  urlsForUser,
+  createEncryptedPassword
+} = require('./helpers');
 
 app.set('view engine', 'ejs');
 
+app.use(methodOverride('_method'));
 app.use(express.urlencoded({extended: true}));
-//app.use(cookieParser());
 app.use(
   cookieSession({
     name: 'session',
@@ -25,20 +33,19 @@ const users = {
   userRandomID: {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: '1'
-    //password: 'purple-monkey-dinosaur'
+    password: 'purple-monkey-dinosaur'
   },
   user2RandomID: {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: '2'
-    //password: 'dishwasher-funk'
+    password: 'dishwasher-funk'
   }
 };
 
 //deletes the URL
-app.post('/urls/:shortURL/delete', (req, res) => {
-  if (urlsForUser(req.session.user_id)[req.params.shortURL]) {
+//app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL', (req, res) => {
+  if (urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls');
   } else {
@@ -57,7 +64,7 @@ app.get('/urls/new', (req, res) => {
 
 //to get to the edit screen
 app.get('/urls/:shortURL', (req, res) => {
-  if (urlsForUser(req.session.user_id)[req.params.shortURL]) {
+  if (urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     let templateVars = {
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
@@ -70,8 +77,9 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 //update the long URL
-app.post('/urls/:id', (req, res) => {
-  if (urlsForUser(req.session.user_id)[req.params.id]) {
+// app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
+  if (urlsForUser(req.session.user_id, urlDatabase)[req.params.id]) {
     urlDatabase[req.params.id].longURL = req.body.longURL;
     res.redirect('/urls/');
   } else {
@@ -83,7 +91,7 @@ app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.statusCode = 400;
     res.sendStatus(400);
-  } else if (emailInDB(req.body.email)) {
+  } else if (emailInDB(req.body.email, users)) {
     res.statusCode = 400;
     res.send(400);
   } else {
@@ -91,7 +99,7 @@ app.post('/register', (req, res) => {
     let newUser = {
       id: userID,
       email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 10)
+      password: createEncryptedPassword(req.body.password, 10)
     };
     users[userID] = newUser;
     //res.cookie('user_id', userID);
@@ -106,7 +114,7 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = {urls: urlsForUser(req.session.user_id), user: users[req.session.user_id]};
+  let templateVars = {urls: urlsForUser(req.session.user_id, urlDatabase), user: users[req.session.user_id]};
   res.render('urls_index', templateVars);
 });
 
@@ -122,18 +130,17 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${random}`);
 });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get('/urls.json', (req, res) => {
+//   res.json(urlDatabase);
+// });
 
 app.post('/login', (req, res) => {
   let {email, password} = req.body;
-  if (!validateUser(email, password)) {
+  if (!validateUser(email, password, users)) {
     res.statusCode = 403;
     res.sendStatus(403);
   } else {
-    //res.cookie('user_id', getUserID(email)); //set the cookie to username
-    req.session.user_id = getUserID(email);
+    req.session.user_id = getUserByEmail(email, users).id;
     res.redirect('/urls');
   }
 });
@@ -155,50 +162,3 @@ app.get('/error', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-const generateRandomString = () => {
-  let string = '';
-  let options = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-  for (let i = 0; i < 6; i++) {
-    string += options[Math.floor(Math.random() * options.length)];
-  }
-  return string;
-};
-
-const emailInDB = (email) => {
-  for (const record in users) {
-    if (users[record].email === email) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const validateUser = (email, password) => {
-  for (const record in users) {
-    if (bcrypt.compareSync(password, users[record].password) && email === users[record].email) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const getUserID = (email) => {
-  for (const record in users) {
-    if (users[record].email === email) {
-      return users[record].id;
-    }
-  }
-  return false;
-};
-
-const urlsForUser = (id) => {
-  let newObj = {};
-  for (const record in urlDatabase) {
-    if (urlDatabase[record].userID === id) {
-      newObj[record] = urlDatabase[record];
-    }
-  }
-  return newObj;
-};
