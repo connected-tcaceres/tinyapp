@@ -1,9 +1,8 @@
+const PORT = 8080;
 const express = require('express');
 const app = express();
-const PORT = 8080;
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
-
 const {
   generateRandomString,
   emailInDB,
@@ -14,7 +13,6 @@ const {
 } = require('./helpers');
 
 app.set('view engine', 'ejs');
-
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({extended: true}));
 app.use(
@@ -24,26 +22,10 @@ app.use(
   })
 );
 
-const urlDatabase = {
-  b2xVn2: {longURL: 'http://www.lighthouselabs.ca', userID: 'userRandomID'},
-  '9sm5xK': {longURL: 'http://www.google.com', userID: 'user2RandomID'}
-};
-
-const users = {
-  userRandomID: {
-    id: 'userRandomID',
-    email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
-  },
-  user2RandomID: {
-    id: 'user2RandomID',
-    email: 'user2@example.com',
-    password: 'dishwasher-funk'
-  }
-};
+const urlDatabase = {};
+const users = {};
 
 //deletes the URL
-//app.post('/urls/:shortURL/delete', (req, res) => {
 app.delete('/urls/:shortURL', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
@@ -77,7 +59,6 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 //update the long URL
-// app.post('/urls/:id', (req, res) => {
 app.put('/urls/:id', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.id]) {
     urlDatabase[req.params.id].longURL = req.body.longURL;
@@ -150,13 +131,20 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  //res.clearCookie('user_id'); //clear the 'username' cookie
   req.session = null;
   res.redirect('/urls');
 });
 
-app.get('/error', (req, res) => {
-  res.render('error_page', {user: users[req.session.user_id]});
+// app.get('/error', (req, res) => {
+//   res.render('error_page', {user: users[req.session.user_id]});
+// });
+
+app.get('/', (req, res) => {
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.listen(PORT, () => {
