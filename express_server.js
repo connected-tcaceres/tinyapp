@@ -67,7 +67,10 @@ app.get('/urls/:shortURL', (req, res) => {
     let templateVars = {
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
-      user: users[req.session.user_id]
+      user: users[req.session.user_id],
+      visits: visits[req.params.shortURL],
+      totalVisits: totalVisits(req.params.shortURL, visits),
+      uniqueVisits: uniqueVisits(req.params.shortURL, visits)
     };
     res.render('urls_show', templateVars);
   } else if (req.session.user_id) {
@@ -132,8 +135,6 @@ app.get('/u/:shortURL', (req, res) => {
       visitor: req.session.guest_id,
       time: new Date()
     });
-    console.log(totalVisits(req.params.shortURL, visits));
-    console.log(uniqueVisits(req.params.shortURL, visits));
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
 });

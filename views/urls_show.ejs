@@ -20,6 +20,8 @@
 			<div class="card-body">
 				<h5 class="card-title">TinyURL for: <a href="<%= longURL %>"><%= longURL %></a></h5>
 				<p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+				<p class="card-text">Unique Visits: <%= uniqueVisits %></a></p>
+				<p class="card-text">Total Visits: <%= totalVisits %></a></p>
 			</div>
 
 			<div style="background-color:whitesmoke" class="card-footer text-muted">
@@ -40,6 +42,24 @@
 					</form>
 				</div>
 			</div>
+			<div style="background-color: whitesmoke">
+						<table class="table table-dark">
+								<thead>
+									<tr>
+										<th scope="col">ID</th>
+										<th scope="col">Time</th>
+									</tr>
+								</thead>
+								<tbody>
+									<% for(const visit of visits){ %>
+									<tr>
+										<td><%= visit.visitor %></td>
+										<td><%= visit.time %></td>
+									</tr>
+									<% } %>
+								</tbody>
+							</table>
+				</div>
 		</div>
 
 		<!-- Bootstrap JS -->
