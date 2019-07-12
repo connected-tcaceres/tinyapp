@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 
+// generates random 6 length alphanmumeric string
 const generateRandomString = () => {
   let string = '';
   let options = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -10,6 +11,7 @@ const generateRandomString = () => {
   return string;
 };
 
+// checks if an email address is found in a given database
 const emailInDB = (email, database) => {
   for (const record in database) {
     if (database[record].email === email) {
@@ -19,6 +21,7 @@ const emailInDB = (email, database) => {
   return false;
 };
 
+// validates if email and password provided, match the hashed password stored in database
 const validateUser = (email, password, database) => {
   for (const record in database) {
     if (emailInDB(email, database) && bcrypt.compareSync(password, database[record].password)) {
@@ -28,6 +31,7 @@ const validateUser = (email, password, database) => {
   return false;
 };
 
+//gets user information from database when provided with an email
 const getUserByEmail = (email, database) => {
   for (const record in database) {
     if (database[record].email === email) {
@@ -37,6 +41,7 @@ const getUserByEmail = (email, database) => {
   return undefined;
 };
 
+// gets urls created by specifiied user from a database
 const urlsForUser = (id, database) => {
   let newObj = {};
   for (const record in database) {
@@ -47,6 +52,7 @@ const urlsForUser = (id, database) => {
   return newObj;
 };
 
+//creates encrypted password
 const createEncryptedPassword = (password, count) => {
   return bcrypt.hashSync(password, count);
 };
