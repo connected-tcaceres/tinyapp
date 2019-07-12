@@ -1,4 +1,4 @@
-/*-------------------- IMPORTS --------------------*/
+// IMPORTS ********************
 const PORT = 8080;
 const express = require('express');
 const app = express();
@@ -14,10 +14,11 @@ const {
   createEncryptedPassword
 } = require('./helpers');
 
+// DATABASES ********************
 const urlDatabase = {};
 const users = {};
 
-/*-------------------- APP.SET AND APP.USE --------------------*/
+// APP INITIALIZATION ********************
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({extended: true}));
 app.use(methodOverride('_method'));
@@ -35,7 +36,8 @@ app.use((req, res, next) => {
   next();
 });
 
-//deletes the URL
+// ROUTES ********************
+// delete request: deletes URL
 app.delete('/urls/:shortURL', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
@@ -47,7 +49,7 @@ app.delete('/urls/:shortURL', (req, res) => {
   res.redirect('/urls');
 });
 
-//page to create a new URL
+// get request: page to create new URL
 app.get('/urls/new', (req, res) => {
   if (req.session.user_id) {
     res.render('urls_new', {user: users[req.session.user_id]});
@@ -56,7 +58,7 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
-//to get to the edit screen
+// get request: page to see specific details (and edit) specific URL
 app.get('/urls/:shortURL', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     let templateVars = {
@@ -80,7 +82,7 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-//updates the long URL
+// put request: update URL information
 app.put('/urls/:id', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.id]) {
     urlDatabase[req.params.id].longURL = req.body.longURL;
@@ -92,7 +94,7 @@ app.put('/urls/:id', (req, res) => {
   res.redirect('/urls');
 });
 
-//registration submission
+// post request: registers new user
 app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
     req.flash('error', 'Missing information in fields.');
@@ -108,14 +110,13 @@ app.post('/register', (req, res) => {
       password: createEncryptedPassword(req.body.password, 10)
     };
     users[userID] = newUser;
-    //res.cookie('user_id', userID);
     req.session.user_id = newUser.id;
     req.flash('success', 'You have been successfully registered');
     res.redirect('/urls');
   }
 });
 
-//this is the redirection using the short URL and small link
+// get request: redirection to the long URL using the short URL
 app.get('/u/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     req.flash('error', 'URL does not exist in database.');
@@ -125,11 +126,13 @@ app.get('/u/:shortURL', (req, res) => {
   }
 });
 
+// get request: shows page with all URL information
 app.get('/urls', (req, res) => {
   let templateVars = {urls: urlsForUser(req.session.user_id, urlDatabase), user: users[req.session.user_id]};
   res.render('urls_index', templateVars);
 });
 
+//get request: shows registration page
 app.get('/register', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -138,7 +141,7 @@ app.get('/register', (req, res) => {
   }
 });
 
-//create new URL
+// post request: create new URL
 app.post('/urls', (req, res) => {
   if (req.session.user_id) {
     let username = req.session.user_id;
@@ -150,7 +153,7 @@ app.post('/urls', (req, res) => {
     res.redirect('/urls');
   }
 });
-
+// post request: login to website
 app.post('/login', (req, res) => {
   let {email, password} = req.body;
   if (!req.body.email || !req.body.password) {
@@ -165,7 +168,7 @@ app.post('/login', (req, res) => {
     res.redirect('/urls');
   }
 });
-
+//get request: shows login page
 app.get('/login', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -174,12 +177,14 @@ app.get('/login', (req, res) => {
   }
 });
 
+// post request: logout a user
 app.post('/logout', (req, res) => {
   req.session.user_id = null;
   req.flash('success', 'You have been logged out.');
   res.redirect('/login');
 });
 
+// get request: route directly -> redirects as needed
 app.get('/', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -188,6 +193,7 @@ app.get('/', (req, res) => {
   }
 });
 
+// SERVER INITIALIZATION********************
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
