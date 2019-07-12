@@ -13,11 +13,7 @@
 
 	<body>
 		<!-- include the _header partial -->
-		<% include ./partials/_header %> <% if(!user){ %>
-		<div class="alert alert-danger" role="alert">
-			Please login or register to access the information on this page!
-		</div>
-		<% } else {%>
+		<% include ./partials/_header %>
 
 		<div class="card text-center">
 			<div class="card-header"></div>
@@ -45,7 +41,6 @@
 				</div>
 			</div>
 		</div>
-		<%}%>
 
 		<!-- Bootstrap JS -->
 		<script

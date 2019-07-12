@@ -12,7 +12,7 @@ const {
   urlsForUser,
   createEncryptedPassword
 } = require('./helpers');
-
+/*----------
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({extended: true}));
 app.use(methodOverride('_method'));
@@ -41,7 +41,7 @@ app.delete('/urls/:shortURL', (req, res) => {
   } else if (req.session.user_id) {
     req.flash('error', 'Cannot delete URL. You do not own.');
   } else {
-    req.flash('Must be logged in and own URL to delete.');
+    req.flash('error', 'Must be logged in and own URL to delete.');
   }
   res.redirect('/urls');
 });
@@ -66,14 +66,17 @@ app.get('/urls/:shortURL', (req, res) => {
     res.render('urls_show', templateVars);
   } else if (req.session.user_id) {
     req.flash('error', 'You do not have access to this page or page does not exist!');
+    res.redirect('/urls');
   } else if (!urlDatabase[req.params.shortURL]) {
     req.flash('error', 'The short URL does not exist');
+    res.redirect('/urls');
   } else if (!req.session.user_id) {
     req.flash('error', 'You need to be logged in');
+    res.redirect('/urls');
   } else {
-    res.redirect('error', 'redirected from short url info page');
+    res.flash('error', 'redirected from short url info page');
+    res.redirect('/urls');
   }
-  res.redirect('/urls');
 });
 
 //update the long URL
