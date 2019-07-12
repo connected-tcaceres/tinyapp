@@ -11,7 +11,9 @@ const {
   validateUser,
   getUserByEmail,
   urlsForUser,
-  createEncryptedPassword
+  createEncryptedPassword,
+  uniqueVisits,
+  totalVisits
 } = require('./helpers');
 
 // DATABASES ********************
@@ -130,7 +132,8 @@ app.get('/u/:shortURL', (req, res) => {
       visitor: req.session.guest_id,
       time: new Date()
     });
-    console.log('visit database:', visits);
+    console.log(totalVisits(req.params.shortURL, visits));
+    console.log(uniqueVisits(req.params.shortURL, visits));
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
 });

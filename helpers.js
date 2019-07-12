@@ -57,11 +57,22 @@ const createEncryptedPassword = (password, count) => {
   return bcrypt.hashSync(password, count);
 };
 
+//determines unique visits for a given short URL
+const uniqueVisits = (url, database) => {
+  return new Set(database[url].map((visit) => visit.visitor)).size;
+};
+
+//determines total visits for a given short URL
+const totalVisits = (url, database) => {
+  return database[url].length;
+};
 module.exports = {
   generateRandomString,
   emailInDB,
   validateUser,
   getUserByEmail,
   urlsForUser,
-  createEncryptedPassword
+  createEncryptedPassword,
+  uniqueVisits,
+  totalVisits
 };
