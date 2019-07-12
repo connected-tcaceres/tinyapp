@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
+const flash = require('connect-flash');
 const {
   generateRandomString,
   emailInDB,
@@ -13,14 +14,22 @@ const {
 } = require('./helpers');
 
 app.set('view engine', 'ejs');
-app.use(methodOverride('_method'));
 app.use(express.urlencoded({extended: true}));
+app.use(methodOverride('_method'));
 app.use(
   cookieSession({
     name: 'session',
     keys: ['pika pikachu']
   })
 );
+app.use(flash());
+
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  res.locals.error = req.flash('error');
+  res.locals.success = req.flash('success');
+  next();
+});
 
 const urlDatabase = {};
 const users = {};
@@ -29,10 +38,12 @@ const users = {};
 app.delete('/urls/:shortURL', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
-    res.redirect('/urls');
+  } else if (req.session.user_id) {
+    req.flash('error', 'Cannot delete URL. You do not own.');
   } else {
-    res.redirect('/urls');
+    req.flash('Must be logged in and own URL to delete.');
   }
+  res.redirect('/urls');
 });
 
 //page to create a new URL
@@ -53,28 +64,37 @@ app.get('/urls/:shortURL', (req, res) => {
       user: users[req.session.user_id]
     };
     res.render('urls_show', templateVars);
+  } else if (req.session.user_id) {
+    req.flash('error', 'You do not have access to this page or page does not exist!');
+  } else if (!urlDatabase[req.params.shortURL]) {
+    req.flash('error', 'The short URL does not exist');
+  } else if (!req.session.user_id) {
+    req.flash('error', 'You need to be logged in');
   } else {
-    res.redirect('/urls');
+    res.redirect('error', 'redirected from short url info page');
   }
+  res.redirect('/urls');
 });
 
 //update the long URL
 app.put('/urls/:id', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.id]) {
     urlDatabase[req.params.id].longURL = req.body.longURL;
-    res.redirect('/urls/');
+  } else if (req.session.user_id) {
+    req.flash('error', 'Do not own this URL, cannot edit.');
   } else {
-    res.redirect('/urls/');
+    req.flash('error', 'Could not update the URL');
   }
+  res.redirect('/urls');
 });
 
 app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
-    res.statusCode = 400;
-    res.sendStatus(400);
+    req.flash('error', 'Missing information in fields.');
+    res.redirect(403, '/register');
   } else if (emailInDB(req.body.email, users)) {
-    res.statusCode = 400;
-    res.send(400);
+    req.flash('error', 'Email already registered with an account.');
+    res.redirect(403, '/register');
   } else {
     let userID = generateRandomString();
     let newUser = {
@@ -85,13 +105,19 @@ app.post('/register', (req, res) => {
     users[userID] = newUser;
     //res.cookie('user_id', userID);
     req.session.user_id = newUser.id;
+    req.flash('success', 'You have been successfully registered');
     res.redirect('/urls');
   }
 });
 
 //this is the redirection using the short URL and small link
 app.get('/u/:shortURL', (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL].longURL);
+  if (!urlDatabase[req.params.shortURL]) {
+    req.flash('error', 'URL does not exist in database.');
+    res.redirect('/urls');
+  } else {
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  }
 });
 
 app.get('/urls', (req, res) => {
@@ -100,44 +126,54 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.render('registration', {user: users[req.session.user_id]});
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.render('registration', {user: users[req.session.user_id]});
+  }
 });
 
 //create new URL
 app.post('/urls', (req, res) => {
-  let username = req.session.user_id;
-  let random = generateRandomString();
-  urlDatabase[random] = {longURL: req.body.longURL, userID: username};
-  res.redirect(`/urls/${random}`);
+  if (req.session.user_id) {
+    let username = req.session.user_id;
+    let random = generateRandomString();
+    urlDatabase[random] = {longURL: req.body.longURL, userID: username};
+    res.redirect(`/urls/${random}`);
+  } else {
+    req.flash('error', 'Need to log in to post.');
+    res.redirect('/urls');
+  }
 });
-
-// app.get('/urls.json', (req, res) => {
-//   res.json(urlDatabase);
-// });
 
 app.post('/login', (req, res) => {
   let {email, password} = req.body;
-  if (!validateUser(email, password, users)) {
-    res.statusCode = 403;
-    res.sendStatus(403);
+  if (!req.body.email || !req.body.password) {
+    req.flash('error', 'You did not enter in a required field.');
+    res.redirect(403, '/login');
+  } else if (!validateUser(email, password, users)) {
+    req.flash('error', 'Incorrect credentials. Please try again.');
+    res.redirect(403, '/login');
   } else {
     req.session.user_id = getUserByEmail(email, users).id;
+    req.flash('success', 'Welcome back!');
     res.redirect('/urls');
   }
 });
 
 app.get('/login', (req, res) => {
-  res.render('login', {user: users[req.session.user_id]});
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.render('login', {user: users[req.session.user_id]});
+  }
 });
 
 app.post('/logout', (req, res) => {
-  req.session = null;
-  res.redirect('/urls');
+  req.session.user_id = null;
+  req.flash('success', 'You have been logged out.');
+  res.redirect('/login');
 });
-
-// app.get('/error', (req, res) => {
-//   res.render('error_page', {user: users[req.session.user_id]});
-// });
 
 app.get('/', (req, res) => {
   if (req.session.user_id) {
