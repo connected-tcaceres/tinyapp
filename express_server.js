@@ -17,6 +17,7 @@ const {
 // DATABASES ********************
 const urlDatabase = {};
 const users = {};
+const visits = {};
 
 // APP INITIALIZATION ********************
 app.set('view engine', 'ejs');
@@ -122,6 +123,14 @@ app.get('/u/:shortURL', (req, res) => {
     req.flash('error', 'URL does not exist in database.');
     res.redirect('/urls');
   } else {
+    if (!req.session.guest_id) {
+      req.session.guest_id = generateRandomString();
+    }
+    visits[req.params.shortURL].push({
+      visitor: req.session.guest_id,
+      time: new Date()
+    });
+    console.log('visit database:', visits);
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
 });
@@ -147,6 +156,7 @@ app.post('/urls', (req, res) => {
     let username = req.session.user_id;
     let random = generateRandomString();
     urlDatabase[random] = {longURL: req.body.longURL, userID: username};
+    visits[random] = [];
     res.redirect(`/urls/${random}`);
   } else {
     req.flash('error', 'Need to log in to post.');
