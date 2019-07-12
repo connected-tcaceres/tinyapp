@@ -1,3 +1,4 @@
+/*-------------------- IMPORTS --------------------*/
 const PORT = 8080;
 const express = require('express');
 const app = express();
@@ -12,7 +13,11 @@ const {
   urlsForUser,
   createEncryptedPassword
 } = require('./helpers');
-/*----------
+
+const urlDatabase = {};
+const users = {};
+
+/*-------------------- APP.SET AND APP.USE --------------------*/
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({extended: true}));
 app.use(methodOverride('_method'));
@@ -23,16 +28,12 @@ app.use(
   })
 );
 app.use(flash());
-
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.error = req.flash('error');
   res.locals.success = req.flash('success');
   next();
 });
-
-const urlDatabase = {};
-const users = {};
 
 //deletes the URL
 app.delete('/urls/:shortURL', (req, res) => {
@@ -79,7 +80,7 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-//update the long URL
+//updates the long URL
 app.put('/urls/:id', (req, res) => {
   if (urlsForUser(req.session.user_id, urlDatabase)[req.params.id]) {
     urlDatabase[req.params.id].longURL = req.body.longURL;
@@ -91,6 +92,7 @@ app.put('/urls/:id', (req, res) => {
   res.redirect('/urls');
 });
 
+//registration submission
 app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
     req.flash('error', 'Missing information in fields.');
