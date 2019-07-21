@@ -23,7 +23,7 @@ router.get('/new', isLoggedIn, (req, res) => {
 });
 
 // get request: page to see specific details (and edit) specific URL
-router.get('/:id', urlExists, urlOwner, (req, res) => {
+router.get('/:id', isLoggedIn, urlExists, urlOwner, (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
@@ -36,7 +36,7 @@ router.get('/:id', urlExists, urlOwner, (req, res) => {
 });
 
 // put request: update URL information
-router.put('/:id', urlExists, urlOwner, (req, res) => {
+router.put('/:id', isLoggedIn, urlExists, urlOwner, (req, res) => {
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect('/urls');
 });
