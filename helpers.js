@@ -66,6 +66,7 @@ const uniqueVisits = (url, database) => {
 const totalVisits = (url, database) => {
   return database[url].length;
 };
+
 module.exports = {
   generateRandomString,
   emailInDB,

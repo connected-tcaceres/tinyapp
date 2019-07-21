@@ -1,0 +1,15 @@
+Early returns
+Clean up redundant conditions
+Group redirects
+Never have nested if statements, use early returns to keep it flat
+Use intermediate variables with specific names to improve readability
+
+Url
+GET     index   /urls
+POST    create  /urls
+GET     new     /urls/new
+GET     show    /urls/:id
+POST    update  /urls/:id
+DELETE  destroy /urs/:id
+GET     edit    /urls/:id/edit
+GET     show    /urls/:id/short/:shortId
