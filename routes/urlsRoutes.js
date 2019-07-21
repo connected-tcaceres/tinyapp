@@ -53,6 +53,7 @@ router.post('/', isLoggedIn, (req, res) => {
   let random = generateRandomString();
   urlDatabase[random] = {longURL: req.body.longURL, userID: username};
   visits[random] = [];
+
   return res.redirect(`/urls/${random}`);
 });
 
