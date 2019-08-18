@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt');
 // generates random 6 length alphanmumeric string
 const generateRandomString = () => {
   let string = '';
-  let options = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let options =
+		'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
   for (let i = 0; i < 6; i++) {
     string += options[Math.floor(Math.random() * options.length)];
@@ -24,8 +25,8 @@ const emailInDB = (email, database) => {
 // validates if email and password provided, match the hashed password stored in database
 const validateUser = (email, password, database) => {
   for (const record in database) {
-    if (emailInDB(email, database) && bcrypt.compareSync(password, database[record].password)) {
-      return true;
+    if (database[record].email === email) {
+      return bcrypt.compareSync(password, database[record].password);
     }
   }
   return false;

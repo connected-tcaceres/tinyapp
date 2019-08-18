@@ -2,7 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 // HELPER FUNCTIONS ********************
-const {generateRandomString, urlsForUser, uniqueVisits, totalVisits} = require('../helpers');
+const {
+  generateRandomString,
+  urlsForUser,
+  uniqueVisits,
+  totalVisits
+} = require('../helpers');
 
 // DATABASES ********************
 const {urlDatabase, users, visits} = require('../data/database');
@@ -43,7 +48,11 @@ router.put('/:id', isLoggedIn, urlExists, urlOwner, (req, res) => {
 
 // get request: shows page with all URL information
 router.get('/', (req, res) => {
-  let templateVars = {urls: urlsForUser(req.session.user_id, urlDatabase), user: users[req.session.user_id]};
+  console.log('USERS:', users);
+  let templateVars = {
+    urls: urlsForUser(req.session.user_id, urlDatabase),
+    user: users[req.session.user_id]
+  };
   res.render('urls_index', templateVars);
 });
 
